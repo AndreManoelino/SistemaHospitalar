@@ -12,14 +12,19 @@ namespace Hospital.API.Controllers
     {
         private readonly AppDbContext _context;
         private readonly PasswordService _passwordService;
+        private readonly TokenService _tokenService;
 
-        public AuthController(AppDbContext context, PasswordService passwordService)
+        public AuthController(
+            AppDbContext context, 
+            PasswordService passwordService, 
+            TokenService tokenService)
         {
             _context = context;
             _passwordService = passwordService;
+            _tokenService = tokenService;
         }
 
-        //  LOGIN
+        // 🔐 LOGIN
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -29,16 +34,17 @@ namespace Hospital.API.Controllers
             if (usuario == null)
                 return Unauthorized("Usuário não encontrado");
 
-            // Se senha ainda NÃO está criptografada
+            // 🚨 Senha antiga (não criptografada)
             if (!usuario.SenhaHash.StartsWith("$2"))
             {
                 return Unauthorized("Senha ainda não configurada. Solicite redefinição.");
             }
 
+            // 🔐 Verificação de senha
             if (!_passwordService.VerifyPassword(request.Senha, usuario.SenhaHash))
                 return Unauthorized("Senha inválida");
 
-            // Primeiro acesso
+            // 🔁 Primeiro acesso
             if (usuario.PrimeiroAcesso)
             {
                 return Ok(new
@@ -48,8 +54,12 @@ namespace Hospital.API.Controllers
                 });
             }
 
+            // 🔐 Gerar token
+            var token = _tokenService.GenerateToken(usuario);
+
             return Ok(new
             {
+                token,
                 usuario.Id,
                 usuario.Nome,
                 usuario.Email,
@@ -57,7 +67,7 @@ namespace Hospital.API.Controllers
             });
         }
 
-        //ALTERAR SENHA
+        // 🔄 ALTERAR SENHA
         [HttpPost("alterar-senha")]
         public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaRequest request)
         {
@@ -67,7 +77,7 @@ namespace Hospital.API.Controllers
             if (usuario == null)
                 return NotFound("Usuário não encontrado");
 
-            // Criptografa nova senha
+            // 🔐 Criptografa nova senha
             usuario.SenhaHash = _passwordService.HashPassword(request.NovaSenha);
 
             // ✔ Remove flag de primeiro acesso
@@ -75,7 +85,10 @@ namespace Hospital.API.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok("Senha alterada com sucesso");
+            return Ok(new
+            {
+                mensagem = "Senha alterada com sucesso"
+            });
         }
     }
 }
