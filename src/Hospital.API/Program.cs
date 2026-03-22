@@ -1,13 +1,15 @@
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Hospital.API.Data;
 using Microsoft.EntityFrameworkCore;
-
+using Hospital.API.Services;
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔹 Swagger (documentação da API)
+builder.Services.AddControllers(); 
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<PasswordService>();
 
-// 🔹 Banco de dados (PostgreSQL - Supabase)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
@@ -16,7 +18,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// 🔹 Middleware (pipeline)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -25,7 +26,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 🔹 Endpoint base (teste)
+app.MapControllers(); // 🔥 ADD ISSO
+
 app.MapGet("/", () => "API Hospital rodando 🚀");
 
 app.Run();
