@@ -1,0 +1,35 @@
+# 🔹 Build
+bin/
+obj/
+
+# 🔹 Visual Studio
+.vs/
+*.user
+*.suo
+
+# 🔹 Logs
+*.log
+
+# 🔹 Arquivos de ambiente (🔥 IMPORTANTE)
+appsettings.Development.json
+appsettings.Local.json
+
+# 🔹 Secrets
+secrets.json
+
+# 🔹 OS
+.DS_Store
+Thumbs.db
+
+# 🔹 Rider / VSCode
+.idea/
+.vscode/
+
+# 🔹 Node (caso use depois)
+node_modules/
+
+# 🔹 EF Migrations cache
+*.db
+
+# 🔹 Publicação
+publish/
